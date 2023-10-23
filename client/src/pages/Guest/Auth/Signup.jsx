@@ -2,7 +2,7 @@ import AuthForm from "../../../components/Auth/AuthForm";
 import { useAuth } from "../../../hooks/useAuth";
 
 const Signup = () => {
-  const { auth } = useAuth();
+  const { auth, isLoading, error } = useAuth();
 
   const onSubmit = async (data) => {
     await auth("signup", data.email, data.password);
