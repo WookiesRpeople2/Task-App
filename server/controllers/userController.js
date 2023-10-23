@@ -3,52 +3,70 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { exists } = require("../models/userModel");
 
-const createToken = (_id) => {
-  return jwt.sign({ _id }, process.env.JWT_SECRET, { expiresIn: "30 days" });
+/**
+ * @param {string} _id
+ * @param {string} email
+ */
+const createToken = (_id, email) => {
+  return jwt.sign({ _id, email }, process.env.JWT_SECRET, {
+    expiresIn: "30 days",
+  });
 };
 
+/**
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 const signup = async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const exsits = await User.findOne({ email });
     if (exsits) {
-      return res.status(400).json("The email used is already taken");
+      return res.status(400).json({ error: "This email is already taken" });
     }
 
     const salt = await bcrypt.genSalt(12);
     const hash = await bcrypt.hash(password, salt);
 
     const user = await User.create({ email, password: hash });
-    const token = createToken(user._id);
+    const token = createToken(user._id, user.email);
 
-    res.status(200).json({ email, token });
+    res.status(200).json({ token });
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
 };
 
+/**
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json("Incorrect email");
+      return res.status(404).json({ error: "This email is already taken" });
     }
 
     const matches = await bcrypt.compare(password, user.password);
     if (!matches) {
-      return res.status(400).json("Incorrect password");
+      return res.status(400).json({ error: "This email is already taken" });
     }
 
-    const token = createToken(user._id);
+    const token = createToken(user._id, user.email);
 
-    res.status(200).json({ email, token });
+    res.status(200).json({ token });
   } catch (e) {
-    res.status(400).json("Please enter a email and password");
+    res.status(400).json({ error: "This email is already taken" });
   }
 };
 
+/**
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 const userUpdate = async (req, res) => {
   const id = req.user._id;
   const { email, password } = req.body;
@@ -57,8 +75,8 @@ const userUpdate = async (req, res) => {
 
     if (email) {
       const exsists = await User.findOne({ email });
-      if (exists) {
-        return res.status(404).json("This email is already taken");
+      if (exsists) {
+        return res.status(404).json({ error: "This email is already taken" });
       }
       updateData.email = email;
     }

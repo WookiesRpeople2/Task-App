@@ -9,6 +9,13 @@ const taskSchema = new Schema(
     },
     description: {
       type: String,
+    },
+    // card: {
+    //   type: String,
+    //   required: true,
+    // },
+    workspace_id: {
+      type: String,
       required: true,
     },
     user_id: {

@@ -10,9 +10,7 @@ router.post("/login", zodAuth, login);
 //sign up
 router.post("/signup", zodAuth, signup);
 
-//show a user
-// router.get("/:id");
-
 //update a user
-router.post("/edit", requireAuth, userUpdate);
+router.patch("/edit", requireAuth, userUpdate);
+
 module.exports = router;

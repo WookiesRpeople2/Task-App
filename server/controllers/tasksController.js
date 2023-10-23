@@ -1,50 +1,75 @@
 const Task = require("../models/taskModel");
-const isValidMongoId = require("../helper/isValidMongoId");
 
-//get all the tasks
+//
+/**
+ * @description get all the tasks
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 const getAllTasks = async (req, res) => {
-  const task = await Task.find({}).sort({ createdAt: -1 });
+  const workspace_id = req.params.workspaceId;
+  const task = await Task.find({ workspace_id }).sort({ createdAt: -1 });
   res.status(200).json(task);
 };
 
-//get a single task from id
+/**
+ * @description get a single task from id
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 const getASingalTask = async (req, res) => {
-  const { id } = req.params;
-  isValidMongoId(id);
+  const { id: _id, workspaceId: workspace_id } = req.params;
 
-  const task = await Task.findById(id);
+  const task = await Task.findOne({ _id, workspace_id });
 
   if (!task) {
-    res.status(400).json({ error: "There is no susch task in the database" });
+    return res
+      .status(400)
+      .json({ error: "There is no susch task in the database" });
   }
 
   res.status(200).json(task);
 };
 
-// create a new task
+/**
+ * @description create a new task
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 const createATask = async (req, res) => {
+  const workspace_id = req.params.workspaceId;
   const { title, description } = req.body;
 
   try {
-    const task = await Task.create({ title, description });
+    const user_id = req.user._id;
+    const task = await Task.create({
+      title,
+      description,
+      workspace_id,
+      user_id,
+    });
     res.status(200).json(task);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
-//upadate a task
+/**
+ * @description upadate a task
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ */
 const updateATask = async (req, res) => {
-  const { id } = req.params;
-
-  isValidMongoId(id);
-
-  const task = await Task.findOneAndUpdate({ _id: id }, { ...req.body });
+  const { id: _id, workspaceId: workspace_id } = req.params;
+  const task = await Task.findOneAndUpdate(
+    { _id, workspace_id },
+    { ...req.body }
+  );
 
   if (!task) {
     return res
       .status(400)
-      .json({ error: "This document was not able to be deleted" });
+      .json({ error: "This document was not able to be Updated" });
   }
 
   res.status(200).json(task);
@@ -52,10 +77,9 @@ const updateATask = async (req, res) => {
 
 //delete a task
 const deleteATask = async (req, res) => {
-  const { id } = req.params;
+  const { id: _id, workspaceId: workspace_id } = req.params;
 
-  isValidMongoId(id);
-  const task = await Task.findOneAndDelete({ _id: id });
+  const task = await Task.findOneAndDelete({ _id, workspace_id });
 
   if (!task) {
     return res

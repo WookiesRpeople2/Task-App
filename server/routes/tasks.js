@@ -6,22 +6,23 @@ const {
   updateATask,
   deleteATask,
 } = require("../controllers/tasksController");
+const isValidMongoId = require("../middleware/isValidMongoId");
 
 const router = express.Router();
 
 // get all tasks
-router.get("/", getAllTasks);
+router.get("/:workspaceId/tasks", getAllTasks);
 
 //get a single task
-router.get("/:id", getASingalTask);
+router.get("/:workspaceId/tasks/:id", isValidMongoId, getASingalTask);
 
 //create a task
-router.post("/", createATask);
+router.post("/:workspaceId/tasks", createATask);
 
 //update a task
-router.patch("/:id", updateATask);
+router.patch("/:workspaceId/tasks/:id", isValidMongoId, updateATask);
 
 //delete a task
-router.delete("/:id", deleteATask);
+router.delete("/:workspaceId/tasks/:id", isValidMongoId, deleteATask);
 
 module.exports = router;

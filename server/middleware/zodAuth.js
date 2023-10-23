@@ -7,6 +7,11 @@ const validate = z.object({
     .min(6, { message: "Password must be a min of 6 characters" }),
 });
 
+/**
+ * @param {import("express").Request} req
+ * @param {import("express").Response} res
+ * @param {import("express").NextFunction} next
+ */
 const zodAuth = async (req, res, next) => {
   try {
     validate.parse(req.body);
